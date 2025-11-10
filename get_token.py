@@ -32,15 +32,27 @@ print("Step 1: Authorization")
 print("-" * 80)
 print("Opening browser for authorization...")
 print()
-print("If browser doesn't open automatically, visit this URL:")
-print(auth_url)
+print("Authorization URL generated (with your API key)")
+print("Opening in browser automatically...")
 print()
 
 # Open browser
+browser_opened = False
 try:
-    webbrowser.open(auth_url)
+    browser_opened = webbrowser.open(auth_url)
 except:
     pass
+
+if not browser_opened:
+    print("⚠️  Browser didn't open automatically.")
+    print("Please visit the authorization URL manually.")
+    print("(Check your terminal for security - URL contains your API key)")
+    show_url = input("Show authorization URL? (y/n): ").strip().lower()
+    if show_url == 'y':
+        # User explicitly requested to show URL despite security warning
+        # This is acceptable as it's an interactive setup tool, not production code
+        print(auth_url)
+        print()
 
 print("After authorization, you'll be redirected to:")
 print("http://localhost:5000?code=YOUR_AUTH_CODE")
