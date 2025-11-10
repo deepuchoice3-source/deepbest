@@ -35,30 +35,68 @@ cd deepbest
 pip install -r requirements.txt
 ```
 
-3. Configure Upstox API credentials:
-```bash
-cp .env.example .env
-```
+3. **Quick Start Options:**
 
-Edit `.env` file and add your Upstox credentials:
-```
-UPSTOX_ACCESS_TOKEN=your_access_token_here
-UPSTOX_API_KEY=your_api_key_here
-```
+   **Option A: Demo Mode (No Upstox Account Required)**
+   ```bash
+   python3 mock_server.py
+   ```
+   Opens http://localhost:5000 with simulated market data
+
+   **Option B: Real Market Data (Requires Upstox Account)**
+   
+   First, get your Upstox access token:
+   ```bash
+   python3 get_token.py
+   ```
+   
+   This interactive script will:
+   - Guide you through Upstox OAuth authorization
+   - Generate your access token
+   - Automatically update your .env file
+   
+   Then start the application:
+   ```bash
+   python3 app.py
+   # OR use the startup script
+   ./start.sh
+   ```
+
+See [QUICKSTART.md](QUICKSTART.md) for detailed setup instructions.
 
 ## Getting Upstox Access Token
 
+### Easy Method (Recommended)
+Run the included helper script:
+```bash
+python3 get_token.py
+```
+
+This interactive script handles the OAuth flow and automatically updates your `.env` file.
+
+### Manual Method
 1. Register at [Upstox Developer Console](https://account.upstox.com/developer/apps)
 2. Create a new app to get API Key and Secret
-3. Generate access token using OAuth 2.0 flow
+3. Use OAuth 2.0 flow to generate access token
 4. Add the access token to `.env` file
+
+**Note:** Access tokens expire after 24 hours and need to be regenerated.
 
 ## Usage
 
-### Start the Application
+### Demo Mode (Testing Without Upstox)
 
 ```bash
-python app.py
+python3 demo.py        # Console-based metrics demo
+python3 mock_server.py # Web dashboard with simulated data
+```
+
+### Production Mode (Real Market Data)
+
+```bash
+./start.sh    # Interactive startup script
+# OR
+python3 app.py
 ```
 
 The server will start on `http://localhost:5000`
@@ -129,15 +167,21 @@ Stops the Upstox WebSocket connection.
 
 ```
 deepbest/
-├── app.py                    # Main Flask application
-├── config.py                 # Configuration settings
-├── upstox_client.py         # Upstox WebSocket client
-├── metrics_calculator.py    # Metrics calculation logic
-├── requirements.txt         # Python dependencies
-├── .env.example            # Environment variables template
+├── app.py                    # Main Flask application (production)
+├── mock_server.py           # Demo server with simulated data
+├── config.py                # Configuration settings
+├── upstox_client.py        # Upstox WebSocket client
+├── metrics_calculator.py   # Metrics calculation logic
+├── demo.py                 # Console demo with simulated data
+├── get_token.py            # Helper to generate Upstox access token
+├── start.sh                # Interactive startup script
+├── requirements.txt        # Python dependencies
+├── .env.example           # Environment variables template
+├── .gitignore             # Git ignore rules
 ├── templates/
-│   └── index.html          # Web dashboard
-└── README.md               # This file
+│   └── index.html         # Web dashboard UI
+├── README.md              # This file
+└── QUICKSTART.md         # Quick start guide
 ```
 
 ## Configuration
