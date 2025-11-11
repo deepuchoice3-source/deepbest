@@ -8,13 +8,13 @@ class SignalGenerator:
     """Generate buy/sell signals based on financial metrics"""
     
     @staticmethod
-    def generate_signal(metrics: Dict[str, float]) -> Dict[str, any]:
+    def generate_signal(metrics: Dict[str, any]) -> Dict[str, any]:
         """
-        Generate buy/sell signal based on multiple metrics
+        Generate buy/sell signal based on multiple metrics including advanced indicators
         
         Signal Logic:
-        - BUY: Alpha > 0, Beta < 1.5, R² > 0.5, Correlation > 0.5, Volatility < 0.5
-        - SELL: Alpha < -0.02, Beta > 1.8, Volatility > 0.7
+        - BUY: Positive alpha, moderate beta, RSI < 30 (oversold), MACD bullish, price near lower Bollinger band
+        - SELL: Negative alpha, high beta, RSI > 70 (overbought), MACD bearish, price near upper Bollinger band
         - HOLD: Otherwise
         
         Returns:
@@ -25,6 +25,8 @@ class SignalGenerator:
         r_squared = metrics.get('r_squared', 0)
         correlation = metrics.get('correlation', 0)
         volatility = metrics.get('volatility', 0)
+        rsi = metrics.get('rsi', 50)
+        macd_data = metrics.get('macd', {})
         
         buy_score = 0
         sell_score = 0
@@ -73,6 +75,33 @@ class SignalGenerator:
         elif volatility < 0.3:
             buy_score += 1
             reasons.append(f"Low volatility ({volatility:.2%})")
+        
+        # RSI analysis (Advanced Indicator)
+        if rsi < 30:
+            buy_score += 3
+            reasons.append(f"Oversold RSI ({rsi:.1f}) - potential bounce")
+        elif rsi < 40:
+            buy_score += 1
+            reasons.append(f"Low RSI ({rsi:.1f})")
+        elif rsi > 70:
+            sell_score += 3
+            reasons.append(f"Overbought RSI ({rsi:.1f}) - potential correction")
+        elif rsi > 60:
+            sell_score += 1
+            reasons.append(f"High RSI ({rsi:.1f})")
+        
+        # MACD analysis (Advanced Indicator)
+        if macd_data:
+            macd_line = macd_data.get('macd', 0)
+            signal_line = macd_data.get('signal', 0)
+            histogram = macd_data.get('histogram', 0)
+            
+            if histogram > 0 and macd_line > signal_line:
+                buy_score += 2
+                reasons.append(f"MACD bullish crossover")
+            elif histogram < 0 and macd_line < signal_line:
+                sell_score += 2
+                reasons.append(f"MACD bearish crossover")
         
         # Determine signal
         if buy_score >= 5 and buy_score > sell_score + 2:
