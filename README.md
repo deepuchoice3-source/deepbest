@@ -41,23 +41,48 @@
    pip install -r requirements.txt
    ```
 
-3. **Set up environment (Optional)**
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your Upstox API token
-   ```
+4. **Configure for Live or Demo Mode**
    
-   Note: The token is already configured in `app.py`, but you can override it via `.env` file.
+   **For Live Market Trading** (Real-time data from Upstox):
+   - The application is now configured for live market use
+   - Uses your Upstox API token for real-time data
+   - Updates every 30 seconds during market hours (9:15 AM - 3:30 PM IST)
+   
+   **For Demo/Testing** (Mock data):
+   - Edit `app.py` line 18: Change `USE_MOCK_DATA = False` to `USE_MOCK_DATA = True`
+   - Uses simulated data for testing without API calls
 
-4. **Run the application**
+5. **Run the application**
    ```bash
    python app.py
    ```
 
-5. **Open your browser**
+6. **Open your browser**
    ```
    http://localhost:5000
    ```
+
+## Live Market Configuration
+
+### Current Status: ✅ LIVE MARKET ENABLED
+
+The dashboard is configured for **live intraday trading** with the following features:
+
+- **Real-time Data**: Fetches live prices from Upstox API every 30 seconds
+- **Market Hours**: 9:15 AM - 3:30 PM IST (Monday-Friday)
+- **Auto-refresh**: Dashboard updates automatically
+- **Fallback**: Automatically switches to mock data if API fails
+
+### Toggle Between Live/Demo Mode
+
+Edit `app.py` line 18:
+```python
+# For live market data
+USE_MOCK_DATA = False
+
+# For demo/testing with mock data
+USE_MOCK_DATA = True
+```
 
 ## How It Works
 
@@ -131,8 +156,38 @@ deepbest/
 
 ## Notes
 
+- ✅ **Live Market Ready**: Application is configured for real-time trading
 - The application uses the Upstox API token provided in the code
-- Data refreshes automatically every 30 seconds
+- Data refreshes automatically every 30 seconds during market hours
+- Mock data fallback ensures dashboard works even when API is unavailable
+- The signal generation algorithm is based on standard financial analysis techniques
+
+## 🚀 Recommended Add-ons & Enhancements
+
+See **[ADDON_SUGGESTIONS.md](ADDON_SUGGESTIONS.md)** for comprehensive enhancement ideas including:
+
+### High Priority Features
+1. **WebSocket Integration** - Real-time tick-by-tick updates instead of 30s polling
+2. **Smart Alerts** - Email, SMS, Telegram notifications for strong signals
+3. **Advanced Indicators** - RSI, MACD, Bollinger Bands, Moving Averages
+4. **Historical Data Storage** - Database for backtesting and analysis
+5. **Portfolio Management** - Track positions, P&L, and risk
+
+### Medium Priority Features
+6. **Enhanced Charts** - Multiple timeframes, candlestick charts, drawing tools
+7. **User Authentication** - Multi-user support with saved preferences
+8. **News Integration** - Real-time financial news and events
+9. **Mobile App** - Progressive Web App for mobile devices
+10. **Options Trading** - Options chain, Greeks, strategies
+
+### Infrastructure Improvements
+- **Production Deployment** - Docker, Nginx, SSL/HTTPS
+- **Monitoring & Logging** - Error tracking, performance monitoring
+- **Database** - PostgreSQL for data persistence
+- **Testing** - Unit tests, integration tests
+- **API Rate Limiting** - Caching and queue management
+
+See the full suggestions document for implementation details and code examples.
 - Mock data is used as fallback when API calls fail
 - The signal generation algorithm is based on standard financial analysis techniques
 
