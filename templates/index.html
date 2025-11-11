@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepBest - Nifty 50 Trading Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .nifty-index {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .index-value {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .index-price {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        
+        .index-change {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .index-change.positive {
+            background: rgba(16, 185, 129, 0.9);
+        }
+        
+        .index-change.negative {
+            background: rgba(239, 68, 68, 0.9);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .stocks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stock-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stock-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .stock-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .stock-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stock-change {
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        
+        .stock-change.positive {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .stock-change.negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .signal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        
+        .signal-badge.BUY {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .signal-badge.SELL {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .signal-badge.HOLD {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .metric-item {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .metric-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+        
+        .metric-value {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .signal-reasons {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .signal-reasons ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .signal-reasons li {
+            padding: 5px 0;
+            font-size: 0.9em;
+            color: #555;
+        }
+        
+        .signal-reasons li:before {
+            content: "• ";
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: white;
+        }
+        
+        .refresh-time {
+            text-align: center;
+            color: white;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .legend {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .legend h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .legend-label {
+            font-weight: bold;
+            color: #333;
+            min-width: 120px;
+        }
+        
+        .legend-desc {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 DeepBest Trading Dashboard</h1>
+            <p class="subtitle">Real-time Nifty 50 Analysis with Financial Metrics & Trading Signals</p>
+        </header>
+        
+        <div class="nifty-index" id="nifty-index">
+            <div class="index-value">
+                <div>
+                    <h2>Nifty 50 Index</h2>
+                    <div class="index-price" id="index-price">Loading...</div>
+                </div>
+                <div class="index-change" id="index-change">--</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3 style="margin-bottom: 15px; color: #667eea;">📈 Nifty 50 Intraday Chart</h3>
+            <div id="nifty-chart" style="width: 100%; height: 400px;"></div>
+        </div>
+        
+        <div class="legend">
+            <h3>📚 Financial Metrics Reference</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-label">Alpha (α)</span>
+                    <span class="legend-desc">Extra return beyond market expectation</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-label">Beta (β)</span>
+                    <span class="legend-desc">Market sensitivity & volatility exposure</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-label">R² (R-squared)</span>
+                    <span class="legend-desc">Movement explained by index</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-label">Correlation (ρ)</span>
+                    <span class="legend-desc">Direction & strength of movement</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-label">Volatility (σ)</span>
+                    <span class="legend-desc">Intraday risk & price fluctuation</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-label">Elasticity</span>
+                    <span class="legend-desc">₹ change per Nifty point</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading">Loading stock data...</div>
+        <div class="stocks-grid" id="stocks-grid"></div>
+        <div class="refresh-time" id="refresh-time"></div>
+    </div>
+    
+    <script>
+        // Auto-refresh every 30 seconds
+        const REFRESH_INTERVAL = 30000;
+        
+        function updateNiftyIndex() {
+            fetch('/api/nifty-index')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('index-price').textContent = 
+                        '₹' + data.price.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    
+                    const changeEl = document.getElementById('index-change');
+                    const changeText = `${data.change >= 0 ? '+' : ''}${data.change.toFixed(2)} (${data.change_percent >= 0 ? '+' : ''}${data.change_percent.toFixed(2)}%)`;
+                    changeEl.textContent = changeText;
+                    changeEl.className = 'index-change ' + (data.change >= 0 ? 'positive' : 'negative');
+                })
+                .catch(error => console.error('Error fetching Nifty index:', error));
+        }
+        
+        function updateNiftyChart() {
+            fetch('/api/chart/NIFTY')
+                .then(response => response.json())
+                .then(data => {
+                    const trace = {
+                        x: data.map(d => new Date(d.timestamp)),
+                        y: data.map(d => d.price),
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'Nifty 50',
+                        line: {
+                            color: '#667eea',
+                            width: 2
+                        },
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(102, 126, 234, 0.1)'
+                    };
+                    
+                    const layout = {
+                        margin: {t: 10, r: 10, b: 40, l: 60},
+                        xaxis: {
+                            title: 'Time',
+                            showgrid: true,
+                            gridcolor: '#f0f0f0'
+                        },
+                        yaxis: {
+                            title: 'Price (₹)',
+                            showgrid: true,
+                            gridcolor: '#f0f0f0'
+                        },
+                        plot_bgcolor: '#fafafa',
+                        paper_bgcolor: 'white'
+                    };
+                    
+                    Plotly.newPlot('nifty-chart', [trace], layout, {responsive: true});
+                })
+                .catch(error => console.error('Error fetching chart data:', error));
+        }
+        
+        function updateStocks() {
+            fetch('/api/stocks')
+                .then(response => response.json())
+                .then(stocks => {
+                    document.getElementById('loading').style.display = 'none';
+                    const grid = document.getElementById('stocks-grid');
+                    grid.innerHTML = '';
+                    
+                    stocks.forEach(stock => {
+                        const card = document.createElement('div');
+                        card.className = 'stock-card';
+                        
+                        const changeClass = stock.change >= 0 ? 'positive' : 'negative';
+                        const changeText = `${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)} (${stock.change_percent >= 0 ? '+' : ''}${stock.change_percent.toFixed(2)}%)`;
+                        
+                        const signalIcon = stock.signal === 'BUY' ? '📈' : stock.signal === 'SELL' ? '📉' : '⏸️';
+                        
+                        card.innerHTML = `
+                            <div class="stock-header">
+                                <div>
+                                    <div class="stock-name">${stock.symbol}</div>
+                                    <div class="stock-change ${changeClass}">${changeText}</div>
+                                </div>
+                                <div class="stock-price">₹${stock.price.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                            </div>
+                            
+                            <div class="signal-badge ${stock.signal}">
+                                ${signalIcon} ${stock.signal} (${stock.signal_strength}%)
+                            </div>
+                            
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <div class="metric-label">Alpha (α)</div>
+                                    <div class="metric-value">${(stock.metrics.alpha * 100).toFixed(2)}%</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Beta (β)</div>
+                                    <div class="metric-value">${stock.metrics.beta.toFixed(3)}</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">R²</div>
+                                    <div class="metric-value">${stock.metrics.r_squared.toFixed(3)}</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Correlation (ρ)</div>
+                                    <div class="metric-value">${stock.metrics.correlation.toFixed(3)}</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Volatility (σ)</div>
+                                    <div class="metric-value">${(stock.metrics.volatility * 100).toFixed(2)}%</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Elasticity</div>
+                                    <div class="metric-value">₹${stock.metrics.elasticity.toFixed(4)}</div>
+                                </div>
+                            </div>
+                            
+                            ${stock.signal_reasons && stock.signal_reasons.length > 0 ? `
+                                <div class="signal-reasons">
+                                    <strong>Analysis:</strong>
+                                    <ul>
+                                        ${stock.signal_reasons.map(reason => `<li>${reason}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        `;
+                        
+                        grid.appendChild(card);
+                    });
+                    
+                    updateRefreshTime();
+                })
+                .catch(error => {
+                    console.error('Error fetching stocks:', error);
+                    document.getElementById('loading').textContent = 'Error loading stock data. Retrying...';
+                });
+        }
+        
+        function updateRefreshTime() {
+            const now = new Date();
+            document.getElementById('refresh-time').textContent = 
+                `Last updated: ${now.toLocaleTimeString('en-IN')} | Auto-refresh in 30 seconds`;
+        }
+        
+        function refreshAll() {
+            updateNiftyIndex();
+            updateNiftyChart();
+            updateStocks();
+        }
+        
+        // Initial load
+        refreshAll();
+        
+        // Auto-refresh
+        setInterval(refreshAll, REFRESH_INTERVAL);
+    </script>
+</body>
+</html>
