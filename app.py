@@ -118,4 +118,8 @@ def get_mock_stocks_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Note: Debug mode is enabled for development. 
+    # For production, set debug=False or use a production WSGI server like Gunicorn
+    import os
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
